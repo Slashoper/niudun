@@ -1,0 +1,1 @@
+#*/5 * * * * root /opt/bin/Check_bjpos.com.py >/dev/null 2>&1

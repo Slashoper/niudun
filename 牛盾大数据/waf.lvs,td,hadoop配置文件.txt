@@ -1,0 +1,88 @@
+一.WAF，LVS,TDAGENT.HADOOP.SEARCH各自有哪些服务和配置项
+1.waf
+supervisord中含有redis,redis_6377  守护进程 /etc/supervisord.conf  
+自动启动dnsmasq redis_6379.conf  REDIS出问题 /var/log/supervisor/supervisord.log 日志查看
+redis配置 /etc/redis.conf /etc/redis_6377.conf 修改redis IP同步
+sshd
+td-agent服务端  
+/etc/rsyslog.conf 里模块配置omkafka  配置td_agent  /etc/td-agent/td-agent.conf抓取
+zabbix-agent /etc/zabbix/zabbix_agentd.conf
+snmpd
+nginx  /usr/local/ndserver/nginx/conf/nginx.conf  
+/usr/local/ndserver/nginx/conf/mod/mod.conf 军网配置
+/usr/local/ndserver/nginx/conf/mod/upsteam_mod.con
+salt /etc/salt/minion.d/_schedule.conf
+/etc/salt/minion  master 定义服务端 id定义本机
+
+/opt/bin/   目录下检测脚本
+
+原始日志/cache/logs  保存三天 通过/opt/bin/rsync_fc_log.sh日志服务压缩ZIP日志  
+ 传给9.66zabbix上 /opt/soft/rsync/etc/rsyncd.conf 
+
+/log/01/日志  rsync 日志 9.66 单节点集合日志 存放7天
+2.lvs
+keepalived  /etc/keepalived/keepalived.conf
+zabbix-agent  /etc/zabbix/zabbix_agentd.conf
+3.td-agent
+td-agent 日志  /var/log/td-agent/td-agent.log 
+TD-AGENT 一台3个进程 总计9个 218.219.220
+61.174.14.194/27
+/opt/bin/kafka_iptables.py  配置防火墙
+vim /etc/elasticsearch/elasticsearch.yml  ES配置
+vim /opt/bin/Check_Premium_Edition.py   5XX检测
+strings /usr/local/openresty/nginx/conf/passwd.db 添加用户
+tdagent重启脚本（218-220）
+    #*/8 * * * * /bin/bash /opt/bin/td_elsatic.sh 写入ES  3个TD-AGENT 进程
+    #*/12 * * * * /bin/bash /opt/bin/td_hadoop.sh 写入hadoop  3个TD-AGENT 进程
+61.174.14.221 日志下载 cd  /log/datalog/lv2/2017/02/01/
+
+#tdagent是否有堆积，如果有堆积删除堆积，重新启动
+-bash-4.3$ cd  /var/result/fluentd/buffer/
+-bash-4.3$ ll
+total 12
+-rw-r--r-- 1 td-agent td-agent 6572 Feb  9 13:34 mod..q548125608a93ecc4.buffer
+-rw-r--r-- 1 td-agent td-agent    3 Feb  9 13:35 mod..q548125608a93ecc4.buffer.pos
+4.HADOOP
+14.211 [hdfs@master211 dk]$ pwd
+/var/lib/hadoop-hdfs/dk
+[hdfs@master211 dk]$ bash daikuangjisuan.sh  #每个月初手动执行一次，追加到liuliangtongji.txt 中
+
+61.174.9.94 HADOOP后台统计计算脚本[root@ctl-zj-061-174-009-094 ~]# su - hdfs
+-bash: ulimit: open files: cannot modify limit: Operation not permitted
+-bash-4.3$ crontab -l
+##*/15 * * * * /var/lib/hadoop-hdfs/jobs/total.sh >> /var/result/logs/total.log 2>&1
+##*/6 * * * * /var/lib/hadoop-hdfs/jobs/hourliuliang.sh >> /var/result/logs/hourliuliang.log 2>&1
+*/12 * * * * /var/lib/hadoop-hdfs/jobs/total.sh >> /var/result/logs/total.log 2>&1
+*/6 * * * * /var/lib/hadoop-hdfs/jobs/hourliuliang.sh >> /var/result/logs/hourliuliang.log 2>&1
+
+*/5 * * * * /var/lib/hadoop-hdfs/jobs/mod_new.sh >> /var/result/logs/mod.log 2>&1
+*/49 * * * * /var/lib/hadoop-hdfs/jobs/domaintoday.sh >> /var/result/logs/domaintoday.log 2>&1
+##10 0 * * * /var/lib/hadoop-hdfs/p.sh >> /var/result/logs/p.log 2>&1
+5 0 * * * /var/lib/hadoop-hdfs/q.sh >> /var/result/logs/q.log 2>&1
+7 * * * * /var/lib/hadoop-hdfs/analyze_table.sh >> /var/result/logs/analyze_table.log 2>&1
+20 0 * * * /var/lib/hadoop-hdfs/analyze_table_day.sh >> /var/result/logs/analyze_table_day.log 2>&1
+
+13 1 * * * /var/lib/hadoop-hdfs/jobs/domainyester.sh >> /var/result/logs/domainyester.log 2>&1
+13 2 * * * /var/lib/hadoop-hdfs/jobs/domain7.sh >> /var/result/logs/domain7.log 2>&1
+33 3 * * * /var/lib/hadoop-hdfs/jobs/domain30.sh >> /var/result/logs/domain30.log 2>&1
+10 0 * * * /var/lib/hadoop-hdfs/jobs/liuliang.sh> /var/result/logs/liuliang.log 2>&1
+#15 6 * * * /var/lib/hadoop-hdfs/move_data.sh> /var/result/logs/move_data.sh.log 2>&1
+#15 6 * * * /var/lib/hadoop-hdfs/dk/dp.sh> /var/lib/hadoop-hdfs/dk/dump_error.log 2>&1
+
+
+## migrate table from temp_table to new_accesslog2 ##
+3 0 * * * /var/lib/hadoop-hdfs/jobs/migrate_table.sh >> /var/result/logs/migrate_table.log 2>&1
+HADOOP  211hadoop 主服务器 94脚本服务器
+http://61.174.14.211:7180/cmf/login
+节点出故障 先解除授权再重启服务
+Hadoop 中zookeeper 配置文件/var/run/cloudera-scm-agent/process/8421-zookeeper-server/zoo.cfg
+weblog/temp_table/day=*/ht=[0-23] 为临时文件保存三天日志
+一个日志为三个进程 同时有三份
+
+cat /var/result/domainday/sum 脚本处理后的文件
+通过/etc/td-agent/td-agent.conf
+tail方式复制到61.174.14.199中的redis中通过后台程序将数据转成MYSQL到WEB中
+
+
+5.search
+/etc/elasticsearch/elasticsearch.yml

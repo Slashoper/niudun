@@ -1,0 +1,38 @@
+
+################# 1
+node /usr/local/src/kibana3-master/sample/server.js  &
+
+    server {
+        listen       8081;
+        server_name  audit3.anquan.io;
+        error_page  404 403              /404.html;
+
+        location / {
+           proxy_pass    http://localhost:8001/src;
+           proxy_redirect default ;
+           auth_basic "secret";
+           auth_basic_user_file /usr/local/openresty/nginx/conf/passwd.db;
+        }
+        allow 163.53.243.18;
+        allow 118.186.129.197;
+        allow 118.192.170.34;
+        allow 118.186.129.203;
+        allow 114.111.166.162;
+        allow 202.85.220.92;
+        deny all;
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+    }
+
+
+/usr/local/openresty/nginx/sbin/nginx -c /usr/local/openresty/nginx/conf/nginx.conf -t
+
+
+
+
+############## 2
+使用nginx代理就可以
+

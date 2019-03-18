@@ -1,0 +1,129 @@
+# ---------------------------------- Cluster -----------------------------------
+cluster.name: "2dafb4bf52d4e8e0"
+cluster.routing.allocation.node_initial_primaries_recoveries: 8
+cluster.routing.allocation.node_concurrent_recoveries: 8
+
+# ------------------------------------ Node ------------------------------------
+#node.name: ${HOSTNAME}
+node.name: "niudun_node194"
+node.master: true
+# D'not data node set true!!!
+node.data: false
+
+# ----------------------------------- Paths ------------------------------------
+path.data: /log/02,/log/03,/log/04,/log/05,/log/06,/log/07,/log/08,/log/09,/log/10,/log/11,/log/12
+path.repo: ["/backup"]
+
+# ----------------------------------- Memory -----------------------------------
+bootstrap.mlockall: true
+
+# ---------------------------------- Network -----------------------------------
+network.bind_host: 172.26.99.1
+network.publish_host: 172.26.99.1
+http.host: 61.174.14.194
+network.tcp.keep_alive: true
+
+# ---------------------------------- Gateway -----------------------------------
+#gateway.type: local
+gateway.recover_after_nodes: 6
+gateway.recover_data_nodes: 9
+gateway.recover_after_time: 5m
+
+# ---------------------------------- Transport module -----------------------------------
+transport.tcp.compress: true
+
+# ---------------------------------- Http module -----------------------------------
+http.enabled: true
+http.tcp_keep_alive: true
+http.max_content_length: 500mb
+http.cors.allow-origin: "/.*/"
+http.cors.enabled: true
+
+# --------------------------------- Discovery ----------------------------------
+discovery.zen.minimum_master_nodes: 1
+discovery.zen.fd.ping_timeout: 120s
+discovery.zen.fd.ping_retries: 6
+discovery.zen.fd.ping_interval: 30s
+discovery.zen.ping.timeout: 3s
+discovery.zen.ping.unicast.hosts: ["172.26.99.1", "172.26.99.2", "172.26.99.3", "172.26.99.4", "172.26.99.5", "172.26.99.6", "172.26.99.7", "172.26.99.8", "172.26.99.9", "172.26.99.10", "172.26.99.11", "172.26.99.12", "172.26.99.13", "172.26.99.14", "172.26.99.15"]
+
+# ---------------------------------- Various -----------------------------------
+node.max_local_storage_nodes: 1
+action.destructive_requires_name: true
+
+# ---------------------------------- Indices module -----------------------------------
+# indices recovery
+indices.recovery.max_bytes_per_sec: 100mb
+indices.recovery.max_size_per_sec: 400mb
+indices.recovery.concurrent_streams: 8
+indices.recovery.compress: true
+indices.recovery.translog_ops: 2000
+
+# circuit breaker
+indices.breaker.total.limit: 70%
+indices.breaker.fielddata.limit: 60%
+indices.breaker.request.limit: 40%
+
+# fielddata
+indices.fielddata.cache.size:  30%
+
+# node query cache
+indices.queries.cache.size: 10%
+
+# indexing buffer
+indices.memory.index_buffer_size: 15%
+#indices.memory.max_index_buffer_size: 28gb
+
+# shard request cache
+indices.requests.cache.size: 2%
+
+# basic 
+index.number_of_shards: 5
+index.number_of_replicas: 1
+index.refresh_interval: 5s
+
+# translog settings
+#index.translog.flush_threshold_ops: 50000
+#index.translog.flush_threshold_size: 4g
+#index.translog.flush_threshold_period: 30m
+#index.translog.interval: 5s
+#index.translog.sync_interval: 5s
+
+# thread pool
+# Don’t Touch These Settings!
+# https://www.elastic.co/guide/en/elasticsearch/guide/2.x/_don_8217_t_touch_these_settings.html#_threadpools
+#threadpool.search.type: fixed
+#threadpool.search.size: 2
+#threadpool.search.queue_size: 400
+#
+#threadpool.bulk.type: fixed
+#threadpool.bulk.size: 8
+#threadpool.bulk.queue_size: 300
+#
+#threadpool.index.type: fixed
+#threadpool.index.size: 8
+#threadpool.index.queue_size: 100
+
+
+# ---------------------------------- Slowlog module -----------------------------------
+#index.search.slowlog.level: TRACE
+#index.search.slowlog.threshold.query.warn: 10s
+#index.search.slowlog.threshold.query.info: 5s
+#index.search.slowlog.threshold.query.debug: 2s
+#index.search.slowlog.threshold.query.trace: 500ms
+#
+#index.search.slowlog.threshold.fetch.warn: 1s
+#index.search.slowlog.threshold.fetch.info: 800ms
+#index.search.slowlog.threshold.fetch.debug: 500ms
+#index.search.slowlog.threshold.fetch.trace: 200ms
+#
+#index.indexing.slowlog.threshold.index.warn: 10s
+#index.indexing.slowlog.threshold.index.info: 5s
+#index.indexing.slowlog.threshold.index.debug: 2s
+#index.indexing.slowlog.threshold.index.trace: 500ms
+
+## mavel 
+marvel.agent.exporters:
+  id1:
+    type: http
+    host: ["61.174.14.194:9200","61.174.14.195:9200","61.174.14.196:9200"]

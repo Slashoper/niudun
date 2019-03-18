@@ -1,0 +1,33 @@
+#!/bin/bash
+export PATH=/usr/local/bin:/usr/local/bin:/usr/local/rvm/gems/ruby-2.1.4/bin:/usr/local/rvm/gems/ruby-2.1.4@global/bin:/usr/local/rvm/rubies/ruby-2.1.4/bin:/usr/lib64/qt-3.3/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/rvm/bin:/usr/local/jdk1.8.0_65/bin:/root/bin:/root/bin:/usr/local/node/bin/
+
+#for i in `curl http://61.174.14.194:9200/_cat/indices? -s |awk '{if($6==0)print $0}'|awk '{print $3}'`; do echo $i;curl -XDELETE http://61.174.14.194:9200/$i -s |python -m json.tool; done
+
+## delete 32 day ago index
+delete_index_name="access-$(date -d "32 day ago" "+%Y.%m.%d")"
+curl -XDELETE http://61.174.14.194:9200/$delete_index_name -s |python -m json.tool
+
+
+#### optimize yearstday index ###
+optimize_index_name="access-$(date -d "1 day ago" "+%Y.%m.%d")" 
+optimize_index_name_mod="mod-$(date -d "1 day ago" "+%Y.%m.%d")" 
+curl -XPOST http://61.174.14.194:9200/$optimize_index_name/_optimize -s | python -m json.tool
+curl -XPOST http://61.174.14.194:9200/$optimize_index_name_mod/_optimize -s | python -m json.tool
+
+
+#### disable flush index
+#current_index_name="access-$(date "+%Y.%m.%d")"
+#mod_index_name="mod-$(date "+%Y.%m.%d")"
+
+# all disable
+#for i in `curl -XGET http://61.174.14.194:9200/_cat/indices -s | grep access | awk '{print $3}' | sort`
+#    do
+#      if [ "$i" != "$current_index_name" ]; then
+#           echo $i
+#           curl -XPUT http://61.174.14.194:9200/$i/_settings -d ' { "refresh_interval": "-1" } ' -s | python -m json.tool
+#      fi
+#    done
+# yearstday disable
+
+curl -XPUT http://61.174.14.194:9200/$optimize_index_name/_settings -d ' { "refresh_interval": "-1" } ' -s | python -m json.tool
+curl -XPUT http://61.174.14.194:9200/$optimize_index_name_mod/_settings -d ' { "refresh_interval": "-1" } ' -s | python -m json.tool

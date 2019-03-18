@@ -1,0 +1,1 @@
+*/5 * * * * root /opt/bin/Check_junwang_404status.py >/dev/null 2>&1

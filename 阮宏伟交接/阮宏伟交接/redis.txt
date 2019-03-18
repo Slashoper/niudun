@@ -1,0 +1,189 @@
+
+# ---------------------------------------------
+# 1、查询数据库
+127.0.0.1:6377> auth "Qwe5sj32BSy9jpYC"
+OK
+# 选择数据库0
+127.0.0.1:6377> select 0        
+OK
+# 查看db 0所有的keys
+127.0.0.1:6377> keys *
+1) "domain:ssl_pem"
+2) "domain:ssl_crt"
+3) "domain:ssl_pkey"
+4) "domains"
+# 查看db0多少key大小
+127.0.0.1:6377> dbsize
+(integer) 4
+# 选择数据库1
+127.0.0.1:6377> select 1
+OK
+127.0.0.1:6377[1]> keys *
+(empty list or set)
+127.0.0.1:6377[1]> dbsize
+(integer) 0
+127.0.0.1:6377[1]> 
+
+
+# -----------------------------------------------------
+# 2、key的类型
+
+# set类型
+#一、刷新任务下发，但是不刷新解决方法
+
+#非常重要：两个key
+hostname
+hostname_pwaf
+
+#发现这个节点没有上，但是已经开始刷新了。需要删除这个节点
+[root@ctl-zj-009-082 purge]# tail /var/log/purge.log -f         
+2016-08-15 10:12:39 task: 36101 failed run:3 errors:set(['OTH_BJ_087_227']) -
+
+#获取hostname的所有详细信息，类型是set
+127.0.0.1:6379> SMEMBERS hostname  
+
+127.0.0.1:6379> smembers "hostsname_waf"  
+1) "CRC_BJ_134_016"
+2) "CRC_BJ_134_015"
+#获取hostname这个key中的所有集合数量
+127.0.0.1:6379> SCARD hostname            
+(integer) 71
+127.0.0.1:6379> 
+
+#删除指定值
+127.0.0.1:6379> srem hostname "OTH_BJ_087_231"  
+(integer) 1
+
+#----
+# 增加值2个地方都要增加
+#增加指定值
+127.0.0.1:6379> sadd hostname_pwaf "bgp-bj-119-090-062-160"   
+(integer) 1
+#增加指定值
+127.0.0.1:6379> sadd hostname "bgp-bj-119-090-062-160"        
+(integer) 1
+
+
+#获取isp的线路
+127.0.0.1:6379> hget isp "122.226.182.43"  
+#中文显示乱码  
+127.0.0.1:6379> hgetall isp                  
+
+
+
+
+# hash类型
+#删除
+hdel vip 221.204.202.149
+hdel vip 221.204.202.150
+
+#增加
+hset vip 221.204.202.149
+hset vip 221.204.202.150
+
+#示例
+61.174.9.82:6379> hset vip "122.70.134.43" "4:bj" #增加vip
+127.0.0.1:6377> type "domain:ssl_pem"
+hash
+127.0.0.1:6377> hget "domain:ssl_pem" "jk.anquan.io"
+127.0.0.1:6377> hgetall "domain:ssl_pem"
+
+# 添加hash类型key为user.1, name为张三
+127.0.0.1:6379> HSET user.1 name zhangsan
+(integer) 1
+127.0.0.1:6379> keys *
+1) "user.1"
+# 添加hash类型key为user.1, name为李四
+127.0.0.1:6379> hset user.2 name lisi
+(integer) 1
+# 获取当前所有keys，有user1和user2
+127.0.0.1:6379> keys *
+1) "user.2"
+2) "user.1"
+# 给user1，name为张三增加年龄为45
+127.0.0.1:6379> hset user.1 age 45
+(integer) 1
+
+127.0.0.1:6379> hgetall user.2
+1) "name"
+2) "lisi"
+# 获取user1下面所有的值
+127.0.0.1:6379> hgetall user.1
+1) "name"
+2) "zhangsan"
+3) "age"
+4) "45"
+# 增加工资值
+127.0.0.1:6379> hset user.1 sala 30000
+(integer) 1
+127.0.0.1:6379> hgetall user.1
+1) "name"
+2) "zhangsan"
+3) "age"
+4) "45"
+5) "sala"
+6) "30000"
+127.0.0.1:6379> hset user.1 tech lisi
+(integer) 1
+127.0.0.1:6379> hgetall user.1
+1) "name"
+2) "zhangsan"
+3) "age"
+4) "45"
+5) "sala"
+6) "30000"
+7) "tech"
+8) "lisi"
+127.0.0.1:6379> hgetall user.1
+1) "name"
+2) "zhangsan"
+3) "age"
+4) "45"
+5) "sala"
+6) "30000"
+7) "tech"
+8) "lisi"
+# 删除user1工资 30000
+127.0.0.1:6379> hdel user.1 sala 30000
+(integer) 1
+127.0.0.1:6379> hgetall user.2
+1) "name"
+2) "lisi"
+127.0.0.1:6379> hmset user.2 name niuer age 34
+OK
+127.0.0.1:6379> hgetall user.2
+1) "name"
+2) "niuer"
+3) "age"
+4) "34"
+127.0.0.1:6379> HSETNX user.1 name lisi
+(integer) 0
+127.0.0.1:6379> HSETNX user.1 fri 5
+(integer) 1
+
+
+# ---------------------------------------------------
+# 3、redis主从复制
+
+# slaveof master port进行主从复制
+# 主从复制中，从服务器是只读模式，如果改成了写模式那么数据就不一致了
+# 需要重新使用slaveof 127.0.0.1 6377 同步数据
+127.0.0.1:6377> slaveof 127.0.0.1 6377   
+#查看info复制信息， master_link_status:up  
+127.0.0.1:6379[1]> info  
+# Replication
+role:slave
+master_host:127.0.0.1
+master_port:6377
+master_link_status:up
+master_last_io_seconds_ago:1
+master_sync_in_progress:0
+slave_repl_offset:92288528
+slave_priority:100
+slave_read_only:0
+connected_slaves:0
+master_repl_offset:0
+repl_backlog_active:0
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:0
+repl_backlog_histlen:0

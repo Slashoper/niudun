@@ -1,0 +1,7 @@
+#1 1 * * * /usr/local/del_es_index > /dev/null 2>&1
+MAILTO=""
+
+#*/5 * * * * /usr/bin/python /opt/bin/chk_elastic_bulk_queue.py
+30 4 * * * /bin/bash /opt/bin/del_log.sh
+20 3 * * * /bin/bash /opt/bin/del_es_index.sh
+52 * * * *  /usr/sbin/ntpdate ntp1.cachecn.net ntp2.cachecn.net >/dev/null 2>&1

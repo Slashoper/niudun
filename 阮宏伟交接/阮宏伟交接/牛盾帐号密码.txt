@@ -1,0 +1,274 @@
+
+
+
+------------------
+START BY wangqb
+
+运营商：mb是移动，tl是电信，nc是联通
+
+61.174.9.83 zabbix.anquan.io
+61.174.9.83 smokeping.anquan.io
+61.174.9.83 audit.anquan.io
+61.174.9.83 cacti.anquan.io
+61.174.9.83 audit.anquan.io
+61.174.9.83 manage.anquan.io
+61.174.9.83 cmdb.anquan.io
+
+以上网站的统一代理账号 密码
+shengchao   
+Vx40kJbiYMnp6Ejp
+---------------------
+牛盾运维管理系统（帐号管理）：
+http://cmdb.anquan.io/admin/index 
+wangqb
+z6VPcjkd5rh>
+-----------------------
+牛盾云安全管理后台：
+http://manage.anquan.io  //用户接入流程、官网也有视频
+wang.qibo@wifire.net
+6HSPgB
+admin@newdefend.com
+475u@3
+------------------------
+zabbix监控
+http://zabbix.anquan.io
+帐号：fastsec
+密码：shellc0de!@#$ASDF
+--------------------------
+http://smokeping.anquan.io/
+无内容
+--------------------------
+http://audit.anquan.io
+kibana
+---------------------
+http://cacti.anquan.io/
+无内容
+---------------------
+xns后台线路管理：
+https://www.cloudxns.net/
+域名解析：newdefend.com、newdefend.cn、anquan.io
+帐号：zhanghy@fastweb.com.cn
+密码：QW!434AS@#asQW
+新密码：dbAph64-xaiU
+域名解析：fastweb.com.cn
+账号：haoqi@fastweb.com.cn
+密码：12qw!@#
+新密码：ppS13PD
+
+XNS后台权限
+http://xmc.cloudxns.net/
+newdefend@fastweb.com.cn
+968758
+--------------------------------------
+http://cacti.anquan.io/cacti
+shengchao 
+r!e5s7x 
+
+牛盾对外发送邮件的邮箱，账号和密码
+server@newdefend.com  6SeEa0hMlq1W
+
+service@newdefend.com  Jf3c2cI0zdio 
+
+
+
+END   by wangqb
+------------------------
+
+
+
+
+nginx代理用户名密码
+user:ruanhw
+passwd:wo5s%Lr5Y
+
+我的跳板机帐号：
+账号：ruanhw 
+密码：emjg4En6Yoyy
+
+登录堡垒机：
+帐号：ruanhw
+密码：airuan.qyssss123*
+
+https://mail.wifire.net
+账号：wifire\ruanhw
+密码：airuan.qyssss123
+
+CDN管理平台：
+用户名：ruanhw
+密码:airuan.qyssss123
+
+
+cacti监控 
+帐号：admin
+密码：newdefend
+
+xns后台线路管理
+域名解析：newdefend.com、newdefend.cn、anquan.io
+帐号：zhanghy@fastweb.com.cn
+密码：QW!434AS@#asQW
+新密码：dbAph64-xaiU
+
+zabbix监控
+帐号：fastsec
+密码：shellc0de!@#$ASDF
+
+牛盾云安全管理后台：http://manage.anquan.io
+wangqb
+475u@3
+
+帐号：ruanhw
+密码：123456
+
+
+运维管理后台：
+帐号：ruanhongwei 
+密码：airuan.qyssss123
+
+
+http://pan.baidu.com/s/1bp61P9P
+wskm
+
+营销qq
+1002@800109969   牛盾客服1
+密码：r9CliUvRsxqDGkI
+1003@800109969   牛盾客服2
+tangji$123$
+cloudXNS营销账号  牛盾技术支持
+1005@800081044 
+fastweb@123
+牛盾安全云QQ
+2114736369
+GuS@U5ozWja@
+
+ 公司ftp
+ftp://192.168.185.211/
+
+
+
+
+zabbix.anquan.io 账号 密码
+fastsec
+shellc0de!@#$ASDF
+
+
+manage.anquan.io 账号 密码
+
+shengchao   
+Vx40kJbiYMnp6Ejp 
+
+shengchao@fastweb.com.cn 
+1aPNUJ
+
+
+1、
+119.90.62.82:12321
+用户名 fw  
+密码 iKp*h%sxRAwe%YmC
+
+  
+2、
+113.31.30.59:12321
+用户名  administrator 
+密码  eExnZrW&&S#m
+
+61.174.9.78:36598
+administrtor
+fastsecOP[ 
+
+
+RestartQQ 重启机器人
+
+
+						9.82(主redis)
+						    
+							   丨
+				------>waf1		公网丨127.0.0.1
+用户------------> lvs --------->------>waf2	-------->redis同步  ------>6377
+       ipip 	 虚ip		------>waf3	-------->redis      ------>6379	
+				------>waf4					nginx
+										127.0.0.1
+			172.168.x.x
+			keepalived.conf
+
+
+61.174.17.200 总跳板机
+salt
+
+lca  /cache/salt/nginx
+
+
+日志  waf  ------> access  ----------> 		2017070210.log	
+					丨	    丨           丨
+					丨	    丨	         丨									
+					丨	    丨           丨
+					丨	    丨           丨
+				61.174.14.221	   es		Hadoop
+				原始日志	  索引		用户后台统计数据
+				永久		   丨		hdfs文件夹
+				后台下载	   丨		索引丨hive-->mysql
+						   丨
+						   丨
+						   丨
+						   丨
+				waf------>om kafka ----->td agent ---
+								1,
+								2,
+								3,
+
+
+
+61.174.9.83
+sh qq_restart.sh
+perl /usr/local/ops/qq-cli_v2.pl
+sz /tmp/mojo_webqq_qrcode_default.png
+
+
+owl
+owl_agent没有上报数据;可能已宕机
+netstat -tunple | grep "1988\|2001"
+cd /usr/local/owl/owl-agent-updater/falcon-agent/6.1.0/
+./control restart
+
+
+lsb_release -a  查看系统版本
+uname -a  查看内核版本
+
+安全加固
+vim /etc/shells
+保留前4个
+
+vim/etc/modprobe.conf
+install cramfs /bin/true
+install freevxfs /bin/true
+install jffs2 /bin/true
+install hfs /bin/true
+install hfsplus /bin/true
+install squashfs /bin/true
+install udf /bin/true
+install ppp_generic /bin/true
+install pppoe /bin/true
+install pppox /bin/true
+install slhc /bin/true
+install bluetooth /bin/true
+install ipv6 /bin/true
+install irda /bin/true
+install ax25 /bin/true
+install x25 /bin/true
+install ipx /bin/true
+install appletalk /bin/true
+
+
+开通kabana帐号
+
+代理 202.85.220.92 
+
+上
+htpasswd /usr/local/nginx/pwd.db xieqw
+/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf -s reload
+
+
+
+du -h --max-depth=1
+
+
+

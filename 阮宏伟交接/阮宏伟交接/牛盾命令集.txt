@@ -1,0 +1,207 @@
+测试军网父层 
+上父层机器，输入命令 wget -SO /dev/null http://www.mod.gov.cn -e http_proxy=211.166.76.2
+
+1.查看lrzsz是否安装成功。
+#rpm -qa|grep lrzsz
+若出现如下结果，证明lrzsz安装成功！
+
+找到要下载的文件rc.local(本文以此文件为例)。
+#cd /etc
+#ll rc.local
+
+执行下载命令，开始下载文件
+#sz rc.local
+执行此命令会弹出文件位置选择窗口
+
+选择“桌面”，点击“确定”按钮。
+
+用yum安装的卸载办法
+把冲突的包mysql-libs-5.1.73全部卸载：
+命令是：yum -y remove mysql-libs-5.1.73*
+
+
+2.下面是查看网卡的网速 ethtool eth0 
+Speed是网卡速度
+
+3.关机shutdown -h now 
+
+4.修改网卡配置 vi /etc/sysconfig/network-scripts/ifcfg-eth0
+
+5： 修改 /etc/passwd 文件，找到如下行，把用户ID修改为 0 ，如下所示：
+
+复制代码代码如下:
+sc:x:500:500:sc:/home/tommy:/bin/bash
+
+修改后如下
+sc:x:0:500:sc:/home/tommy:/bin/bash
+保存，用sc账户登录后，直接获取的就是root帐号的权限。
+
+
+6.代理 202.85.220.92上
+htpasswd /usr/local/nginx/pwd.db xieqw
+/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf -s reload
+
+7.es登陆账号 
+61.174.14.194 htpasswd /usr/local/openresty/nginx/conf/passwd.db shengchao
+/usr/local/openresty/nginx/sbin/nginx -c/usr/local/openresty/nginx/conf/nginx.conf -s reload
+
+8.初始化主机名
+1.wget -c 61.174.9.76/src/initial.bin
+2.sh initial.bin --hostname
+使用方法: ./initial.bin [ 选项 ]
+--hostname
+       从BOSS管理系统中自动获取服务器主机名,并进行设置.
+--hostname=xxx-xx-000-000-000-000
+       手动指定主机名并设置 (仅在BOSS系统不能正常访问时使用)
+--basic
+       BOSS系统未上架前, 可以做本basic初始化步骤
+       安装基本标准程序包, 例如perl-plugins/kernel/python库等.
+       配置ssh, snmp, zabbix, iptables等基础服务
+--rebasic
+       主要用于平台变更使用
+--mkpass
+       更新root为复杂密码
+
+
+9.让wugq命令可用
+ 1.wget 61.174.9.76/src/init.sh
+ 2.sh init.sh
+ 3.wget -O /root/.ssh/authorized_keys  http://$fileserver/src/200_authorized_keys
+
+10.zabbix 
+/etc/zabbix/zabbix_agentd.conf
+
+11. 61.174.14.211
+su -hdfs
+crontab -l
+统计割接脚本
+ hadoop fs -ls /weblog/temp_table/day=20170812
+
+12.快速将线上waf踢出lvs
+解绑之前操作ip a > /home/outlvs.txt （解绑前的必须操作）
+/home/outlvs.sh stop
+解绑后操作
+/home/outlvs.sh start
+outlvs.sh 脚本自行去61.174.9.76下载
+
+13.lvs 安装
+wget 61.174.9.76/src/install_lvs.sh && sh install_lvs.sh
+
+14.sed
+sed -i 's/book/books/g' file 全部替换
+
+15.增加/删除虚拟IP地址
+网卡上增加一个IP：
+ifconfig eth0:1 192.168.0.1 netmask 255.255.255.0
+
+删除网卡的第二个IP地址:
+ip addr del 192.168.0.1 dev eth0
+
+测试军网源站
+在父层机器上用这个命令，211.166.76.6是源站ip
+wget -SO /dev/null http://www.81.cn -e http_proxy=211.166.76.6 
+
+代理测试
+curl -# -v -o /dev/null 'http://cdn-1.aoshigame.com/version_list'
+
+看IP
+ip -4 addr sh $(ip route get 1.1.1.1|head -1 |awk '{print$5}')|grep inet |awk '{print$2}'
+
+看所有waf的在用网卡和IP
+salt -N waf cmd.run "ip -4 addr sh $(ip route get 1.1.1.1|head -1 |awk '{print$10}')|grep inet |awk '{print$2}'"
+
+过滤日志
+grep -v 'get gw dev' /var/log/messages
+
+tcpdump抓包 vrrp是keepalived进程
+tcpdump -i eth0 -p vrrp -nn -xx
+
+owl监控客户的脚本，监控http://cdn2.aoshigame.com/v1.0.5/file_list
+vim /usr/local/owl/owl-agent-updater/falcon-agent/6.1.0/plugin/sec/300_check_fei200_kehu.sh
+curl -m 10 -x 127.0.0.1:80 -o /dev/null  'http://cdn2.aoshigame.com/v1.0.5/file_list' -# -v
+
+owl监控jk.anquan.io 监控http://jk.anquan.io/src/images/logo--color.png
+vim /usr/local/owl/owl-agent-updater/falcon-agent/6.1.0/plugin/sec/300_check_fei200.sh
+curl -m 10 -x 127.0.0.1:80 -o /dev/null  'http://jk.anquan.io/src/images/logo--color.png' -# -v
+
+看内存大小
+ cat /proc/meminfo |grep MemTotal
+
+看硬盘大小
+fdisk -l |grep Disk 
+
+看CPU大小
+ cat /proc/cpuinfo |grep "model name" 
+
+uname -a               # 查看内核/操作系统/CPU信息的linux系统信息命令   
+head -n 1 /etc/issue   # 查看操作系统版本，是数字1不是字母L   
+cat /proc/cpuinfo      # 查看CPU信息的linux系统信息命令   
+hostname               # 查看计算机名的linux系统信息命令   
+lspci -tv              # 列出所有PCI设备   
+lsusb -tv              # 列出所有USB设备的linux系统信息命令   
+lsmod                  # 列出加载的内核模块   
+env                    # 查看环境变量资源   
+free -m                # 查看内存使用量和交换区使用量   
+df -h                  # 查看各分区使用情况   
+du -sh         # 查看指定目录的大小   
+grep MemTotal /proc/meminfo   # 查看内存总量   
+grep MemFree /proc/meminfo    # 查看空闲内存量   
+uptime                 # 查看系统运行时间、用户数、负载   
+cat /proc/loadavg      # 查看系统负载磁盘和分区   
+mount | column -t      # 查看挂接的分区状态   
+fdisk -l               # 查看所有分区   
+swapon -s              # 查看所有交换分区   
+hdparm -i /dev/hda     # 查看磁盘参数(仅适用于IDE设备)   
+dmesg | grep IDE       # 查看启动时IDE设备检测状况网络   
+ifconfig               # 查看所有网络接口的属性   
+iptables -L            # 查看防火墙设置   
+route -n               # 查看路由表   
+netstat -lntp          # 查看所有监听端口   
+netstat -antp          # 查看所有已经建立的连接   
+netstat -s             # 查看网络统计信息进程   
+ps -ef                 # 查看所有进程   
+top                    # 实时显示进程状态用户   
+w                      # 查看活动用户   
+id             # 查看指定用户信息   
+last                   # 查看用户登录日志   
+cut -d: -f1 /etc/passwd   # 查看系统所有用户   
+cut -d: -f1 /etc/group    # 查看系统所有组   
+crontab -l             # 查看当前用户的计划任务服务   
+chkconfig –list       # 列出所有系统服务   
+chkconfig –list | grep on    # 列出所有启动的系统服务程序   
+rpm -qa                # 查看所有安装的软件包   
+cat /proc/cpuinfo ：查看CPU相关参数的linux系统命令   
+cat /proc/partitions ：查看linux硬盘和分区信息的系统信息命令   
+cat /proc/meminfo ：查看linux系统内存信息的linux系统命令   
+cat /proc/version ：查看版本，类似uname -r   
+cat /proc/ioports ：查看设备io端口   
+cat /proc/interrupts ：查看中断   
+cat /proc/pci ：查看pci设备的信息   
+cat /proc/swaps ：查看所有swap分区的信息  
+
+禁用IPv6
+/etc/sysctl.d/01-disable-ipv6.conf
+# Disable IPv6 globally
+# Refer to http://www.itsprite.com/linuxhow-to-disable-ipv6-networking-on-redhatcentosfedoraubuntu-linux-system/ 
+
+
+net.ipv6.conf.all.disable_ipv6 = 1
+
+sysctl -p /etc/sysctl.d/01-disable-ipv6.conf 就会生效了
+
+加路由黑洞
+salt -N lvs cmd.run "ip route add blackhole 175.20.88.176"
+
+看路由黑洞信息
+ ip route show
+
+预缓存
+salt -N waf cmd.run 'curl -x 127.0.0.1:80 -# -v -o /dev/null "http://static.aoshigame.com/package/android_tiangua1.apk"'
+
+
+cat .google_authenticator 跳板机 google验证，账号随便填
+
+61.174.9.83 qq机器人
+升级机器人的两种方法 
+1.cpanm Mojo::Webqq
+2. cpanm https://cpan.metacpan.org/authors/id/S/SJ/SJDY/Mojo-Webqq-2.2.1.tar.gz

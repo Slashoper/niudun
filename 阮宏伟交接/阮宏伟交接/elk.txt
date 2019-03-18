@@ -1,0 +1,105 @@
+
+一.服务端192.168.100.35（elasticsearch+kibana）
+1.安装elasticsearch:
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.6.0.tar.gz
+tar zxf elasticsearch-5.6.0 -C /usr/local
+
+下载插件
+bin/elasticssearch-plugin install x-pack
+
+对配置文件进行修改
+network.host: 192.168.100.35
+http.port: 9200
+
+创建启动用户 （root不能作为elasticsearch的启动用户）
+groupadd elsearch
+useradd -g elsearch elsearch
+
+对限制进行修改：
+在/etc/security/limits.conf限制行加入下列两行
+hard nofile 65536	
+elsearch hard nofile 65536    #elsearch为启动elasticsearch的用户
+ulimit -Hn        #查看是否生效
+
+sysctl -w vm.max_map_count=262144  #临时生效
+sysctl -a |grep vm.max_map_count   #查看是否生效
+永久修改： echo “vm.max_map_count=262144”>> /etc/sysctl.conf
+
+
+更改elasticsearch文件夹及内部文件的所属用户及组为elsearch:elsearch
+chown -R elsearch.elsearch elasticsearch
+
+切换到elsearch用户再启动
+su elsearch
+./bin/elsearch   #日志会输出到stdout
+./bin/elasticsearch -d #表示以daemon的方式启动
+nohup ./bin/elasticsearch > /dev/null 2>&1 & （放在后台启动）
+
+2.安装kibana
+wget https://artifacts.elastic.co/downloads/kibana/kibana-5.6.0-linux-x86_64.tar.gz
+tar zxf kibana-5.6.0-linux-x86_64.tar -C /usr/local
+
+下载插件
+bin/kibana-pluin install x-pack  
+
+对配置文件进行修改
+server.host: "192.168.100.35"
+elasticsearch.url: "http://192.168.100.35:9200"
+
+启动
+./bin/kibana
+nohup ./bin/kibana > /dev/null 2>&1 & (放在后台启动)
+
+访问
+http://192.168.100.35:5601
+Username: elastic 
+Password: changeme
+
+二.客户端(192.168.100.17)filebeat:
+wget https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-5.6.1-linux-x86_64.tar.gz
+
+tar zxf filebeat -C /usr/local
+
+修改配置文件
+filebeat.prospectors:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/*.log
+配置elasticsearch和kibana共用
+output.elasticsearch:
+  hosts: ["myEShost:9200"]
+  username: "elastic"
+  password: "changeme"
+setup.kibana:
+  host: "mykibanahost:5601"
+  username: "elastic"
+  password: "changeme"
+
+安装模板
+./filebeat setup --dashboards
+
+启动
+./filebeat -e -c filebeat.yml
+
+总结：当elasticsearch：9200登录不进去时  可以重新设置一个本地的超级用户
+(1) 停止elasticsearch服务
+(2) 确保你的配置文件中支持本地账户认证支持，如果你使用的是xpack的默认配置则无需做特殊修改；如果你配置了其他认证方式则需要确保配置本地认证方式在ES_HOME/config/elasticsearch.yml中；
+(3) 使用命令ES_HOME/bin/x-pack/users创建一个基于本地问价认证的超级管理员
+bin/x-pack/users useradd my_admin -p my_password -r superuser
+(4) 启动elasticsearch服务
+(5) 通过api重置elastic超级管理员的密码
+curl -u my_admin -XPUT 'http://localhost:9200/_xpack/security/user/elastic/_password?pretty' -H 'Content-Type: application/json' -d'
+{
+  "password" : "new_password"
+}
+
+
+(6) 校验下密码是否重置成功
+curl -u elastic 'http://localhost:9200/_xpack/security/_authenticate?pretty'
+
+(7) 如果你确定后续不再使用本地认证则可将elasticsearch.yml文件中的本地文件认证方式删除掉；
+
+
+
+LDAP协议认证登录： CN=elk,OU=Users,OU=Users and Groups,OU=21-Shanghai,DC=eainc,DC=com

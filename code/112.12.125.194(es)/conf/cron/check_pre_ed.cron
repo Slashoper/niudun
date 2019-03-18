@@ -1,0 +1,2 @@
+*/5 * * * * root /opt/bin/Check_Premium_Edition.py >/dev/null 2>&1
+*/5 * * * * root /opt/bin/Check_bjpos.com.py >/dev/null 2>&1

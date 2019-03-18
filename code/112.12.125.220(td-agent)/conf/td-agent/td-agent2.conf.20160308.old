@@ -1,0 +1,248 @@
+<source>
+  type   kafka
+  topics nginx-access
+  hosts   61.174.14.218,61.174.14.219,61.174.14.220
+  port   9092
+  #format text
+  format json
+  client_id td-agent-input-nginx-access
+  partition 4
+  max_bytes           52428800
+  max_wait_ms         5000
+  min_bytes           1024
+  socket_timeout_ms   50000
+  add_prefix          abc
+</source>
+
+#<match abc.nginx-access>
+#    type file
+#    path /data01/fluentd/buffer/nginx-access.log
+#</match>
+#<match abc.nginx-access>
+#    type parser
+#    tag ngx.access
+#    key_name message
+#    format json
+#    reserve_data yes
+#    time_parse no 
+#</match>
+<match abc.nginx-access>
+type record_modifier
+char_encoding gbk:utf-8
+tag a.apache.access
+</match>
+
+<match a.apache.access>
+type api
+add_prefix api
+</match>
+
+#<match api.abc.nginx-access>
+#    type file
+#    path /data01/fluentd/buffer/api-nginx-accessx.log
+#</match>
+
+#<match a.apache.access>
+#    type file
+#    path /data01/fluentd/buffer/utf8-nginx-accessx.log
+#</match>
+
+<match api.a.apache.access>
+type copy
+
+<store>
+    type forward
+    heartbeat_type tcp
+    send_timeout 60s
+    recover_wait 10s
+    heartbeat_interval 20s
+    phi_threshold 16
+    hard_timeout 60s
+    buffer_type file
+    buffer_path /data01/fluentd/buffer/myapp.*.buffer2
+    buffer_queue_limit 500
+    buffer_chunk_limit 2m
+    num_threads 50
+    <server>
+      host 61.174.14.221
+      port 10088
+    </server>
+    <secondary>
+      type file
+      path /data01/fluentd/buffer/forward-failed2
+    </secondary>
+</store>
+
+<store>
+    type forward
+    heartbeat_type tcp
+    send_timeout 60s
+    recover_wait 10s
+    heartbeat_interval 20s
+    phi_threshold 16
+    hard_timeout 60s
+    buffer_type file
+    buffer_path /data01/fluentd/buffer/myapp222.*.buffer2
+    buffer_queue_limit 500
+    buffer_chunk_limit 2m
+    num_threads 50
+    <server>
+      host 61.174.14.222
+      port 10088
+    </server>
+    <secondary>
+      type file
+      path /data01/fluentd/buffer/forward222-failed2
+    </secondary>
+</store>
+
+<store>
+type rewrite_tag_filter
+rewriterule1 blockid  ^[-1-7]\d*$ attack.log
+rewriterule2 domain 81\.cn$ jfzb.log1
+rewriterule3 domain chinamil\.com\.cn$ jfzb.log2
+rewriterule4 domain 81rc\.mil\.cn$ jfzb.log3
+rewriterule5 domain mod\.gov\.cn$ jfzb.log4
+</store>
+
+<store>
+type webhdfs
+namenode         61.174.14.212:50070
+standby_namenode 61.174.14.211:50070
+path /weblog/new_access/day=%Y%m%d/ht=%H/${hostname}_%H.log2
+username hdfs
+localtime true
+retry_known_errors yes
+field_separator SOH
+output_include_time true
+output_include_tag false
+time_format %Y-%m-%d %H:%M:%S
+output_data_type attr:clientip,method,domain,request,status,size,referer,agent,hit_status,ruleid,prov,country,blockid,searchbot,p_status,hackerid
+flush_interval 5s
+buffer_type file
+buffer_path /data01/fluentd/buffer/webhdfs2.buffer2
+buffer_chunk_limit 12M
+buffer_queue_limit 2048
+#retry_times   10
+#retry_interval 3
+</store>
+##########
+
+<store>
+type webhdfs
+namenode         61.174.14.212:50070
+standby_namenode 61.174.14.211:50070
+path /weblog/web_source/day=%Y%m%d/${hostname}_%H.log2
+username hdfs
+localtime true 
+retry_known_errors yes
+field_separator SOH
+output_include_time false
+output_include_tag false
+time_format %Y-%m-%d %H:%M:%S
+output_data_type attr:domain,referer,blockid
+flush_interval 5s
+buffer_type file
+buffer_path /data01/fluentd/buffer/webhdfs3.buffer2
+buffer_chunk_limit 12M
+buffer_queue_limit 2048
+#retry_times   10
+#retry_interval 3
+</store>
+
+#########
+
+
+<store>
+type webhdfs
+namenode         61.174.14.212:50070
+standby_namenode 61.174.14.211:50070
+path /weblog/top10_url/day=%Y%m%d/${hostname}_%H.log2
+username hdfs
+localtime true
+retry_known_errors yes
+field_separator SOH
+output_include_time false
+output_include_tag false
+time_format %Y-%m-%d %H:%M:%S
+output_data_type attr:domain,request
+flush_interval 5s
+buffer_type file
+buffer_path /data01/fluentd/buffer/webhdfs4.buffer2
+buffer_chunk_limit 12M
+buffer_queue_limit 2048
+#retry_times   10
+#retry_interval 3
+</store>
+
+#########
+
+<store>
+type webhdfs
+namenode         61.174.14.212:50070
+standby_namenode 61.174.14.211:50070
+path /weblog/top5_hacker/day=%Y%m%d/${hostname}_%H.log2
+username hdfs
+localtime true
+retry_known_errors yes
+field_separator SOH
+output_include_time false
+output_include_tag false
+time_format %Y-%m-%d %H:%M:%S
+output_data_type attr:domain,clientip,prov,hackerid
+flush_interval 5s
+buffer_type file
+buffer_path /data01/fluentd/buffer/webhdfs5.buffer2
+buffer_chunk_limit 12M
+buffer_queue_limit 2048
+#retry_times   10
+#retry_interval 3
+</store>
+
+#########
+
+<store>
+type elasticsearch
+hosts 61.174.14.194:9200,61.174.14.195:9200,61.174.14.196:9200
+logstash_format true
+flush_interval 10s
+logstash_prefix access
+index_name access
+utc_index false
+reload_connections false
+buffer_type file
+buffer_path /data01/fluentd/buffer/nginx.access.buffer2
+buffer_chunk_limit 12M
+buffer_queue_limit 2048
+</store>
+</match>
+<match attack.log>
+type elasticsearch
+hosts 61.174.14.194:9200,61.174.14.195:9200,61.174.14.196:9200
+logstash_format true
+flush_interval 5s
+logstash_prefix waf
+index_name waf
+utc_index false
+reload_connections false
+buffer_type file
+buffer_path /data01/fluentd/buffer/attack.buffer2
+buffer_chunk_limit 12M
+buffer_queue_limit 1024
+</match>
+
+<match jfzb.log*>
+type elasticsearch
+hosts 61.174.14.194:9200,61.174.14.195:9200,61.174.14.196:9200
+logstash_format true
+flush_interval 5s
+logstash_prefix mod
+index_name mod
+utc_index false
+reload_connections false
+buffer_type file
+buffer_path /data01/fluentd/buffer/jfzb.log.buffer2
+buffer_chunk_limit 12M
+buffer_queue_limit 2048
+request_timeout 30
+</match>

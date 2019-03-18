@@ -1,0 +1,24 @@
+节点检测，不同的版本，测试网址不同
+http://jk.anquan.io/check_cdn_health.html  免费版   
+http://jk.anquan.io/check_cdn_health.html?1 专业
+http://jk.anquan.io/check_cdn_health.html?2 商务版
+http://jk.anquan.io/check_cdn_health.html?3 企业版 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

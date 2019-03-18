@@ -1,0 +1,4 @@
+26 4 * * * /usr/bin/python /opt/bin/kafka_iptables.py
+#*/5 * * * * /bin/bash /opt/bin/td_elsatic.sh
+#*/10 * * * * /bin/bash /opt/bin/td_hadoop.sh
+29 * * * * /usr/sbin/ntpdate ntp1.cachecn.net ntp2.cachecn.net >/dev/null 2>&1 ;/sbin/hwclock -w

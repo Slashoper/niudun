@@ -1,0 +1,112 @@
+#!/usr/bin/env python
+# author: wugq@fastweb.com.cn
+#-*- coding: utf-8 -*-
+# at    : 2015-09-09
+
+import requests
+import json
+import subprocess
+import os
+import sys
+import socket
+import fcntl
+import struct
+reload(sys)
+sys.setdefaultencoding('utf-8')
+#whitelist = ['lo', '127.0.0.1', '61.174.14.199', '112.12.125.199', '61.174.14.200', '120.92.245.40', '112.12.125.200', '120.92.245.39', '61.174.14.213', '112.12.125.199', '112.12.125.214', '120.92.245.54', '61.174.14.215', '61.174.14.214', '163.53.243.18', '113.31.18.214', '113.31.18.215', '118.26.224.231', '157.122.148.213', '157.122.148.212']
+#apptype   = ['waf', 'pwaf', 'lvs', 'plvs']
+whitelist = []
+apptype   = ['waf', 'pwaf']
+
+
+  
+def get_local_ip(ifname):
+    try :
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        res =  socket.inet_ntoa(fcntl.ioctl(
+            s.fileno(),
+            0x8915,  # SIOCGIFADDR
+            struct.pack('256s', ifname[:15])
+        )[20:24])
+        whitelist.append(res)
+        #print whitelist
+    except Exception, e:
+        print e
+    
+
+
+def get_local_interface():
+    try :
+        cmd = "/sbin/ifconfig | /bin/grep -E 'bond' | /bin/awk '{print $1}'"
+        msg = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        ret = msg.stdout.readlines()
+        for i in ret: 
+            ifname = i.strip('\n')
+            get_local_ip(ifname)
+    except Exception, e:
+         print e
+
+
+def get_cmdb_ip():
+    try :
+        cmd = '/usr/bin/curl -d "grant_type=client_credentials&client_id=testclient&client_secret=testsecret" http://120.92.248.67/oauth/token'
+        res = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        token  = json.loads(res.stdout.read())
+        token = token.get('access_token')
+        headers = {'NDAUTHTOKEN':token}
+        url_assets = 'http://120.92.248.67/api/assets/view'
+
+        for typename in apptype:
+            param = {'field':'main_ip,manage_ip', 'app_type':typename}
+            reque = requests.get(url_assets, params=param, headers=headers)
+            resul = reque.json()
+            for ipdict in resul:
+                #print ipdict
+                whitelist.append(ipdict.get('main_ip').encode())
+                manage_ips = ipdict.get('manage_ip').encode().split(',')
+                for ip in manage_ips:
+                    #print ip
+                    whitelist.append(ip)
+    except Exception, e:
+        print e
+
+
+def write_bash_file():
+    try :
+        cmd = "/bin/cp -ar /opt/bin/fw/fw.sh /opt/bin/fw/fw.sh.`date +%Y%m%d%H%M%S`"
+        os.popen(cmd) 
+        dup_remov_ip = list(set(whitelist))
+        fp = open('/opt/bin/fw/fw.sh', 'w')
+        fp.write('#!/bin/bash\nexport PATH=/usr/local/bin:/usr/lib64/qt-3.3/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin\n')
+        fp.write('iptables -t nat -F\niptables -t nat -X\niptables -t nat -P PREROUTING ACCEPT\niptables -t nat -P POSTROUTING ACCEPT\niptables -t nat -P OUTPUT ACCEPT\niptables -t mangle -F\niptables -t mangle -X\niptables -t mangle -P PREROUTING ACCEPT\niptables -t mangle -P INPUT ACCEPT\niptables -t mangle -P FORWARD ACCEPT\niptables -t mangle -P OUTPUT ACCEPT\niptables -t mangle -P POSTROUTING ACCEPT\niptables -F\niptables -X\niptables -P FORWARD ACCEPT\niptables -P INPUT ACCEPT\niptables -P OUTPUT ACCEPT\niptables -t raw -F\niptables -t raw -X\niptables -t raw -P PREROUTING ACCEPT\niptables -t raw -P OUTPUT ACCEPT\n')
+        fp.write('sysctl -w "net.netfilter.nf_conntrack_max=655350"\nsysctl -w "net.netfilter.nf_conntrack_tcp_timeout_established=600"\niptables -A INPUT -i lo -j ACCEPT\niptables -A INPUT -p icmp -j ACCEPT\niptables -A INPUT -s 61.174.9.66/32 -j ACCEPT\niptables -A INPUT -s 61.174.9.67/32 -j ACCEPT\niptables -A INPUT -p tcp -m iprange --src-range 61.174.14.194-61.174.14.222 -j ACCEPT\niptables -A INPUT -p tcp -m iprange --src-range 120.92.245.34-120.92.245.62 -j ACCEPT\niptables -A INPUT -p tcp -m iprange --src-range 112.12.125.194-112.12.125.222 -j ACCEPT\niptables -A INPUT -s 120.92.248.66 -j ACCEPT\niptables -A INPUT -s 120.92.248.67 -j ACCEPT\niptables -A INPUT -s 61.174.14.199 -j ACCEPT\niptables -A INPUT -s 61.174.14.200 -j ACCEPT\niptables -A INPUT -s 163.53.243.18/32 -j ACCEPT\niptables -A INPUT -s 118.192.170.34/32 -j ACCEPT\niptables -A INPUT -s 223.94.66.142/32 -j ACCEPT\niptables -A INPUT -s 115.239.228.32/32 -j ACCEPT\niptables -A INPUT -s 115.239.228.34/32 -j ACCEPT\niptables -A INPUT -s 14.136.136.43/32 -j ACCEPT\niptables -A INPUT -s 14.136.136.44/32 -j ACCEPT\niptables -A INPUT -s 61.174.9.68 -p udp --dport 161 -j ACCEPT\niptables -P FORWARD DROP\niptables -P INPUT DROP\n')
+        for ip in dup_remov_ip :
+            if ip != 'lo' :
+                fp.write("iptables -A INPUT -s %s/32 -j ACCEPT\n"%ip)
+            else:
+                fp.write("iptables -A INPUT -i %s -j ACCEPT\n"%ip)
+        fp.write('iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT\niptables -A INPUT -p tcp --dport 9092 -j LOG --log-level 5 --log-prefix "IPTABLES_kafka: "\niptables -A INPUT -p tcp --dport 9092 -j DROP\niptables -A INPUT -p udp --dport 2181 -j LOG --log-level 5 --log-prefix "IPTABLES_zk: "\niptables -A INPUT -p udp --dport 2181 -j DROP\niptables -A INPUT -p tcp --dport 12321 -j LOG --log-level 5 --log-prefix "IPTABLES_sshd: "\niptables -A INPUT -p tcp --dport 12321 -j DROP\n ')
+        fp.close()
+    except Exception, e:
+        print e
+    
+
+def run_fun():
+    try :
+        get_local_interface()
+        get_cmdb_ip()
+        write_bash_file()
+        cmd1 = "/bin/chmod +x /opt/bin/fw/fw.sh"
+        cmd2 = "/bin/bash /opt/bin/fw/fw.sh >> /var/log/kafkaiptables.log 2>&1"
+        f = open('/var/log/kafkapy.log','a')
+        a=os.popen(cmd1)
+        b=os.popen(cmd2)
+        f.write(a.read())
+        f.write(b.read())
+        f.close()
+    except Exception, e:
+        print e
+
+
+if __name__ == "__main__" :
+    run_fun()
